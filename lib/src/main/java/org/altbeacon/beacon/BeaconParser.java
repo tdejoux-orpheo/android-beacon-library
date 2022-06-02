@@ -2,7 +2,10 @@ package org.altbeacon.beacon;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothUuid;
 import android.os.Build;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import org.altbeacon.beacon.logging.LogManager;
@@ -13,6 +16,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -459,9 +463,19 @@ public class BeaconParser implements Serializable {
         ArrayList<Identifier> identifiers = new ArrayList<Identifier>();
         ArrayList<Long> dataFields = new ArrayList<Long>();
         int txPower = 0;
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
 
 
         for (Pdu pdu: advert.getPdus()) {
+            if(pdu.getType() == Pdu.GATT_SERVICE_UUID_PDU_TYPE) {
+                // The first two bytes of the manufacturer specific data are
+                // manufacturer ids in little endian.
+                byte [] data = pdu.getBytes();
+                int startIndex = pdu.getStartIndex();
+                int manufacturerId = ((data[startIndex] & 0xFF) << 8) +(pdu.getType());
+                byte[] manufacturerDataBytes = extractBytes(data, startIndex + 1, data.length - (startIndex + 1));
+                manufacturerData.put(manufacturerId, manufacturerDataBytes);
+            }
             if ((pdu.getType() == Pdu.GATT_SERVICE_UUID_PDU_TYPE && mServiceUuid != null) ||
                 (pdu.getType() == Pdu.GATT_SERVICE_UUID_128_BIT_PDU_TYPE && mServiceUuid128Bit.length != 0)  || pdu.getType() == Pdu.MANUFACTURER_DATA_PDU_TYPE) {
 
@@ -699,11 +713,19 @@ public class BeaconParser implements Serializable {
             beacon.mFirstCycleDetectionTimestamp = timestampMs;
             beacon.mLastCycleDetectionTimestamp = timestampMs;
             beacon.mTxPower = txPower;
+            beacon.serviceData = serviceData;
             return beacon;
         }
         else {
             return null;
         }
+    }
+
+     // Helper method to extract bytes from byte array.
+     private static byte[] extractBytes(byte[] scanRecord, int start, int length) {
+        byte[] bytes = new byte[length];
+        System.arraycopy(scanRecord, start, bytes, 0, length);
+        return bytes;
     }
 
     /**

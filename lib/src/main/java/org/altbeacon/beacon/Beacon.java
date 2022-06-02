@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The <code>Beacon</code> class represents a single hardware Beacon detected by
@@ -171,6 +172,11 @@ public class Beacon implements Parcelable, Serializable {
      * from the advertisement data
      */
     protected String mBluetoothName;
+
+     /**
+     * The service data
+     */
+    protected Map<ParcelUuid, byte[]> mServiceData;
 
     /**
      * The identifier of the beaconParser used to create this beacon.  Useful for figuring out
@@ -584,6 +590,14 @@ public class Beacon implements Parcelable, Serializable {
      */
     public String getBluetoothName() {
         return mBluetoothName;
+    }
+
+     /**
+     * @see #mserviceData
+     * @return mserviceData
+     */
+    public Map<ParcelUuid, byte[]> getServiceData() {
+        return mServiceData;
     }
 
     /**
