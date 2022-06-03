@@ -2,7 +2,6 @@ package org.altbeacon.beacon;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothUuid;
 import android.os.Build;
 import android.os.ParcelUuid;
 import android.util.ArrayMap;
@@ -10,6 +9,7 @@ import android.util.Log;
 
 import org.altbeacon.beacon.logging.LogManager;
 import org.altbeacon.bluetooth.BleAdvertisement;
+import org.altbeacon.bluetooth.BluetoothUuid;
 import org.altbeacon.bluetooth.Pdu;
 
 import java.io.Serializable;
@@ -705,7 +705,7 @@ public class BeaconParser implements Serializable {
                 beacon.mServiceUuid = -1;
             }
 
-            beacon.mserviceData = serviceData;
+            beacon.mServiceData = serviceData;
             beacon.mBluetoothAddress = macAddress;
             beacon.mBluetoothName= name;
             beacon.mManufacturer = manufacturer;

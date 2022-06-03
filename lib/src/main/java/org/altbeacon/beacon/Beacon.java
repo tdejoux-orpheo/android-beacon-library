@@ -283,12 +283,12 @@ public class Beacon implements Parcelable, Serializable {
             ParcelUuid key = ParcelUuid.fromString(in.readString());
             int valueSize = in.readInt();
             byte[] value = new byte[valueSize];
-            for( int i = 0; i < valueSize; i++) {
-                value[i] = in.readByte();
+            for( int j = 0; j < valueSize; j++) {
+                value[j] = in.readByte();
             }
             mServiceData.put(key, value);
         }
-
+        int dataSize = in.readInt();
         this.mDataFields = new ArrayList<Long>(dataSize);
         for (int i = 0; i < dataSize; i++) {
             mDataFields.add(in.readLong());
@@ -328,7 +328,7 @@ public class Beacon implements Parcelable, Serializable {
         this.mBeaconTypeCode = otherBeacon.getBeaconTypeCode();
         this.mServiceUuid = otherBeacon.getServiceUuid();
         this.mServiceUuid128Bit = otherBeacon.getServiceUuid128Bit();
-        this.mServiceData = other.getServiceData();
+        this.mServiceData = otherBeacon.getServiceData();
         this.mBluetoothName = otherBeacon.mBluetoothName;
         this.mParserIdentifier = otherBeacon.mParserIdentifier;
         this.mMultiFrameBeacon = otherBeacon.mMultiFrameBeacon;
@@ -470,7 +470,7 @@ public class Beacon implements Parcelable, Serializable {
     /**
      * @see #mServiceData
      */
-    public int getServiceData() {
+    public Map<ParcelUuid, byte[]> getServiceData() {
         return mServiceData;
     }
 
@@ -724,7 +724,7 @@ public class Beacon implements Parcelable, Serializable {
                 out.writeByte(mServiceUuid128Bit[i]);
             }
         }
-        out.writeBoolean(mServiceData.size());
+        out.writeInt(mServiceData.size());
         for(Map.Entry<ParcelUuid, byte[]> entry : mServiceData.entrySet()) {
             out.writeString(entry.getKey().toString());
             byte[] bytes = entry.getValue();
