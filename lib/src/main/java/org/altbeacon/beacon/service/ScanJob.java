@@ -102,7 +102,6 @@ public class ScanJob extends JobService {
                 for (ScanResult result : queuedScanResults) {
                     ScanRecord scanRecord = result.getScanRecord();
                     if (scanRecord != null) {
-                        LogManager.i("TEST", scanRecord.getServiceData().toString());
                         if (mScanHelper != null) {
                             mScanHelper.processScanResult(result.getDevice(), result.getRssi(), scanRecord.getBytes(),
                                     System.currentTimeMillis() - SystemClock.elapsedRealtime() + result.getTimestampNanos() / 1000000);
