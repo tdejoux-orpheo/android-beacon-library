@@ -25,6 +25,8 @@ package org.altbeacon.beacon;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 
 import org.altbeacon.beacon.client.BeaconDataFactory;
 import org.altbeacon.beacon.client.NullBeaconDataFactory;
@@ -36,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The <code>Beacon</code> class represents a single hardware Beacon detected by
@@ -167,6 +170,13 @@ public class Beacon implements Parcelable, Serializable {
     protected byte[] mServiceUuid128Bit = {};
 
     /**
+     * A map of service uuid with its corresponding data
+     *
+     */
+
+    protected Map<ParcelUuid, byte[]> mServiceData = new ArrayMap<ParcelUuid, byte[]>();
+
+    /**
      * The Bluetooth device name.  This is a field transmitted by the remote beacon device separate
      * from the advertisement data
      */
@@ -267,7 +277,18 @@ public class Beacon implements Parcelable, Serializable {
                 mServiceUuid128Bit[i]= in.readByte();
             }
         }
-        int dataSize = in.readInt();
+        mServiceData = new ArrayMap<ParcelUuid, byte[]>();
+        int serviceDataSize = in.readInt();
+        for( int i = 0; i < serviceDataSize; i++) {
+            ParcelUuid key = ParcelUuid.fromString(in.readString());
+            int valueSize = in.readInt();
+            byte[] value = new byte[valueSize];
+            for( int i = 0; i < valueSize; i++) {
+                value[i] = in.readByte();
+            }
+            mServiceData.put(key, value);
+        }
+
         this.mDataFields = new ArrayList<Long>(dataSize);
         for (int i = 0; i < dataSize; i++) {
             mDataFields.add(in.readLong());
@@ -307,6 +328,7 @@ public class Beacon implements Parcelable, Serializable {
         this.mBeaconTypeCode = otherBeacon.getBeaconTypeCode();
         this.mServiceUuid = otherBeacon.getServiceUuid();
         this.mServiceUuid128Bit = otherBeacon.getServiceUuid128Bit();
+        this.mServiceData = other.getServiceData();
         this.mBluetoothName = otherBeacon.mBluetoothName;
         this.mParserIdentifier = otherBeacon.mParserIdentifier;
         this.mMultiFrameBeacon = otherBeacon.mMultiFrameBeacon;
@@ -443,6 +465,13 @@ public class Beacon implements Parcelable, Serializable {
 
     public byte[] getServiceUuid128Bit() {
         return mServiceUuid128Bit;
+    }
+
+    /**
+     * @see #mServiceData
+     */
+    public int getServiceData() {
+        return mServiceData;
     }
 
     /**
@@ -695,7 +724,15 @@ public class Beacon implements Parcelable, Serializable {
                 out.writeByte(mServiceUuid128Bit[i]);
             }
         }
-
+        out.writeBoolean(mServiceData.size());
+        for(Map.Entry<ParcelUuid, byte[]> entry : mServiceData.entrySet()) {
+            out.writeString(entry.getKey().toString());
+            byte[] bytes = entry.getValue();
+            out.writeInt(bytes.length);
+            for (int i = 0; i < bytes.length; i++) {
+                out.writeByte(bytes[i]);
+            }
+        }
         out.writeInt(mDataFields.size());
         for (Long dataField: mDataFields) {
             out.writeLong(dataField);
@@ -800,6 +837,7 @@ public class Beacon implements Parcelable, Serializable {
             setTxPower(beacon.getTxPower());
             setRssi(beacon.getRssi());
             setServiceUuid(beacon.getServiceUuid());
+            setServiceData(beacon.getServiceData());
             setMultiFrameBeacon(beacon.isMultiFrameBeacon());
             return this;
         }
@@ -902,6 +940,16 @@ public class Beacon implements Parcelable, Serializable {
 
         public Builder setServiceUuid128Bit(byte[] serviceUuid128Bit) {
             mBeacon.mServiceUuid128Bit = serviceUuid128Bit;
+            return this;
+        }
+
+        /**
+         * @see Beacon#mServiceData
+         * @param serviceData
+         * @return builder
+         */
+        public Builder setServiceData(Map<ParcelUuid, byte[]> serviceData) {
+            mBeacon.mServiceData = serviceData;
             return this;
         }
 

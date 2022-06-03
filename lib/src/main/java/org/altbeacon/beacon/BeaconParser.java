@@ -2,7 +2,10 @@ package org.altbeacon.beacon;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothUuid;
 import android.os.Build;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import org.altbeacon.beacon.logging.LogManager;
@@ -13,6 +16,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -458,10 +462,20 @@ public class BeaconParser implements Serializable {
         int startByte = 0;
         ArrayList<Identifier> identifiers = new ArrayList<Identifier>();
         ArrayList<Long> dataFields = new ArrayList<Long>();
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         int txPower = 0;
 
 
         for (Pdu pdu: advert.getPdus()) {
+            if (pdu.getType() == Pdu.SERVICE_UUID_PDU_TYPE) {
+                // The first two bytes of the service data are service data UUID in little
+                // endian. The rest bytes are service data.
+                int serviceUuidLength = BluetoothUuid.UUID_BYTES_16_BIT;
+                byte[] serviceDataUuidBytes = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1, serviceUuidLength);
+                ParcelUuid serviceDataUuid = BluetoothUuid.parseUuidFrom(serviceDataUuidBytes);
+                byte[] serviceDataArray = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1 + serviceUuidLength,  pdu.getActualLength() - serviceUuidLength);
+                serviceData.put(serviceDataUuid, serviceDataArray);
+            }
             if ((pdu.getType() == Pdu.GATT_SERVICE_UUID_PDU_TYPE && mServiceUuid != null) ||
                 (pdu.getType() == Pdu.GATT_SERVICE_UUID_128_BIT_PDU_TYPE && mServiceUuid128Bit.length != 0)  || pdu.getType() == Pdu.MANUFACTURER_DATA_PDU_TYPE) {
 
@@ -691,6 +705,7 @@ public class BeaconParser implements Serializable {
                 beacon.mServiceUuid = -1;
             }
 
+            beacon.mserviceData = serviceData;
             beacon.mBluetoothAddress = macAddress;
             beacon.mBluetoothName= name;
             beacon.mManufacturer = manufacturer;
@@ -918,6 +933,13 @@ public class BeaconParser implements Serializable {
             lastEndOffset = mServiceUuidEndOffset;
         }
         return lastEndOffset+1;
+    }
+
+    // Helper method to extract bytes from byte array.
+    private byte[] extractBytes(byte[] scanRecord, int start, int length) {
+        byte[] bytes = new byte[length];
+        System.arraycopy(scanRecord, start, bytes, 0, length);
+        return bytes;
     }
 
     private boolean byteArraysMatch(byte[] source, int offset, byte[] expected) {
