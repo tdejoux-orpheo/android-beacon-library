@@ -16,6 +16,7 @@ import org.altbeacon.bluetooth.BluetoothCrashResolver;
 import org.altbeacon.bluetooth.BluetoothUuid;
 import org.altbeacon.bluetooth.Pdu;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @TargetApi(18)
@@ -174,5 +175,12 @@ public class CycledLeScannerForJellyBeanMr2 extends CycledLeScanner {
             // and return an empty record with raw scanRecord bytes in results
             return new ArrayMap<ParcelUuid, byte[]>();
         }
+    }
+
+    // Helper method to extract bytes from byte array.
+    private static byte[] extractBytes(byte[] scanRecord, int start, int length) {
+        byte[] bytes = new byte[length];
+        System.arraycopy(scanRecord, start, bytes, 0, length);
+        return bytes;
     }
 }
