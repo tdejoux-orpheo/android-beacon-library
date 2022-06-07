@@ -160,7 +160,7 @@ class IntentScanStrategyCoordinator(val context: Context) {
         for (scanResult in scanResults) {
             if (scanResult != null) {
                 //LogManager.d(TAG, "Got scan result: "+scanResult)
-                scanHelper.processScanResult(scanResult.device, scanResult.rssi, scanResult.scanRecord?.bytes, scanResult.serviceData, scanResult.timestampNanos/1000)
+                scanHelper.processScanResult(scanResult.device, scanResult.rssi, scanResult.scanRecord?.bytes, scanResult.scanRecord?.serviceData, scanResult.timestampNanos/1000)
             }
         }
         val now = java.lang.System.currentTimeMillis()
@@ -213,7 +213,7 @@ class IntentScanStrategyCoordinator(val context: Context) {
                 val callback: ScanCallback = object : ScanCallback() {
                     override fun onScanResult(callbackType: Int, result: ScanResult) {
                         super.onScanResult(callbackType, result)
-                        scanHelper.processScanResult(result.device, result.rssi, result.scanRecord?.bytes, result.serviceData, result.timestampNanos)
+                        scanHelper.processScanResult(result.device, result.rssi, result.scanRecord?.bytes, result.scanRecord?.serviceData, result.timestampNanos)
                         try {
                             scanner.stopScan(this)
                         } catch (e: IllegalStateException) { /* do nothing */
