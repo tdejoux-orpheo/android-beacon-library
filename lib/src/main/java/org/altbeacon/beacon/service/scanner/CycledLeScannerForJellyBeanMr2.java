@@ -5,11 +5,14 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.SystemClock;
+import android.os.ParcelUuid;
 import androidx.annotation.MainThread;
 import androidx.annotation.WorkerThread;
 
 import org.altbeacon.beacon.logging.LogManager;
 import org.altbeacon.bluetooth.BluetoothCrashResolver;
+
+import java.util.Map;
 
 @TargetApi(18)
 public class CycledLeScannerForJellyBeanMr2 extends CycledLeScanner {
@@ -109,9 +112,9 @@ public class CycledLeScannerForJellyBeanMr2 extends CycledLeScanner {
 
                         @Override
                         public void onLeScan(final BluetoothDevice device, final int rssi,
-                                             final byte[] scanRecord) {
+                                             final byte[] scanRecord, Map<ParcelUuid, byte[]> serviceData ) {
                             LogManager.d(TAG, "got record");
-                            mCycledLeScanCallback.onLeScan(device, rssi, scanRecord, System.currentTimeMillis());
+                            mCycledLeScanCallback.onLeScan(device, rssi, scanRecord, serviceData, System.currentTimeMillis());
                             if (mBluetoothCrashResolver != null) {
                                 mBluetoothCrashResolver.notifyScannedDevice(device, getLeScanCallback());
                             }

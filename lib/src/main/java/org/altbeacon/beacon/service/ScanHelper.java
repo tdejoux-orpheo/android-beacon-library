@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.ParcelUuid;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -156,12 +157,12 @@ class ScanHelper {
     }
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    void processScanResult(BluetoothDevice device, int rssi, byte[] scanRecord, long timestampMs) {
+    void processScanResult(BluetoothDevice device, int rssi, byte[] scanRecord, Map<ParcelUuid, byte[]> serviceData, long timestampMs) {
         NonBeaconLeScanCallback nonBeaconLeScanCallback = mBeaconManager.getNonBeaconLeScanCallback();
 
         try {
             new ScanHelper.ScanProcessor(nonBeaconLeScanCallback).executeOnExecutor(getExecutor(),
-                    new ScanHelper.ScanData(device, rssi, scanRecord, timestampMs));
+                    new ScanHelper.ScanData(device, rssi, scanRecord, serviceData, timestampMs));
         } catch (RejectedExecutionException e) {
             LogManager.w(TAG, "Ignoring scan result because we cannot keep up.");
         } catch (OutOfMemoryError e) {
@@ -264,8 +265,8 @@ class ScanHelper {
         @TargetApi(Build.VERSION_CODES.HONEYCOMB)
         @Override
         @MainThread
-        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, long timestampMs) {
-            processScanResult(device, rssi, scanRecord, timestampMs);
+        public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, Map<ParcelUuid, byte[]> serviceData, long timestampMs) {
+            processScanResult(device, rssi, scanRecord, serviceData, timestampMs);
         }
 
         @Override
@@ -379,10 +380,11 @@ class ScanHelper {
      * <strong>This class is not thread safe.</strong>
      */
     private class ScanData {
-        ScanData(@NonNull BluetoothDevice device, int rssi, @NonNull byte[] scanRecord, long timestampMs) {
+        ScanData(@NonNull BluetoothDevice device, int rssi, @NonNull byte[] scanRecord, @NonNull Map<ParcelUuid, byte[]> serviceData, long timestampMs) {
             this.device = device;
             this.rssi = rssi;
             this.scanRecord = scanRecord;
+            this.serviceData = serviceData;
             this.timestampMs = timestampMs;
         }
 
@@ -393,6 +395,9 @@ class ScanHelper {
 
         @NonNull
         byte[] scanRecord;
+
+        @NonNull
+        Map<ParcelUuid, byte[]> serviceData;
 
         @NonNull
         long timestampMs;
@@ -414,7 +419,7 @@ class ScanHelper {
             Beacon beacon = null;
 
             for (BeaconParser parser : ScanHelper.this.mBeaconParsers) {
-                beacon = parser.fromScanData(scanData.scanRecord, scanData.rssi, scanData.device, scanData.timestampMs);
+                beacon = parser.fromScanData(scanData.scanRecord, scanData.rssi, scanData.device, scanData.serviceData, scanData.timestampMs);
 
                 if (beacon != null) {
                     break;
