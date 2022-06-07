@@ -467,10 +467,15 @@ public class BeaconParser implements Serializable {
 
 
         for (Pdu pdu: advert.getPdus()) {
-            if (pdu.getType() == Pdu.SERVICE_UUID_PDU_TYPE) {
+            if (pdu.getType() == Pdu.SERVICE_UUID_16_BIT_PDU_TYPE || pdu.getType() == Pdu.SERVICE_UUID_32_BIT_PDU_TYPE || pdu.getType() == Pdu.SERVICE_UUID_128_BIT_PDU_TYPE) {
                 // The first two bytes of the service data are service data UUID in little
                 // endian. The rest bytes are service data.
                 int serviceUuidLength = BluetoothUuid.UUID_BYTES_16_BIT;
+                if(pdu.getType() == Pdu.SERVICE_UUID_32_BIT_PDU_TYPE) {
+                    serviceUuidLength = BluetoothUuid.UUID_BYTES_32_BIT;
+                } else if (pdu.getType() == Pdu.SERVICE_UUID_128_BIT_PDU_TYPE) {
+                    serviceUuidLength = BluetoothUuid.UUID_BYTES_128_BIT;
+                }
                 byte[] serviceDataUuidBytes = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1, serviceUuidLength);
                 ParcelUuid serviceDataUuid = BluetoothUuid.parseUuidFrom(serviceDataUuidBytes);
                 byte[] serviceDataArray = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1 + serviceUuidLength,  pdu.getActualLength() - serviceUuidLength);
