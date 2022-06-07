@@ -1,6 +1,8 @@
 package org.altbeacon.beacon.service;
 
 import android.os.AsyncTask;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.logging.LogManager;
@@ -17,6 +19,8 @@ import org.robolectric.annotation.Config;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.Map;
 
 /**
  * Created by dyoung on 7/1/15.
@@ -51,7 +55,10 @@ public class BeaconServiceTest {
         int activeThreadCountBeforeScan = executor.getActiveCount();
 
         byte[] scanRecord = new byte[1];
-        callback.onLeScan(null, -59, scanRecord, 123456L);
+
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
+
+        callback.onLeScan(null, -59, scanRecord, serviceData, 123456L);
 
         int activeThreadCountAfterScan = executor.getActiveCount();
 

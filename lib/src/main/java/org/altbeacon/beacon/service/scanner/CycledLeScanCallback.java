@@ -2,6 +2,9 @@ package org.altbeacon.beacon.service.scanner;
 
 import android.bluetooth.BluetoothDevice;
 import androidx.annotation.MainThread;
+import android.os.ParcelUuid;
+
+import java.util.Map;
 
 /**
  * Android API agnostic Bluetooth scan callback wrapper.
@@ -13,6 +16,6 @@ import androidx.annotation.MainThread;
  */
 @MainThread
 public interface CycledLeScanCallback {
-    void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, long timestampMs);
+    void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord, Map<ParcelUuid, byte[]> serviceData, long timestampMs);
     void onCycleEnd();
 }

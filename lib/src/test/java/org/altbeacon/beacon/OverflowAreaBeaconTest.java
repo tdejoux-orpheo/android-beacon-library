@@ -1,6 +1,8 @@
 package org.altbeacon.beacon;
 
 import android.content.Context;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 
 import org.altbeacon.bluetooth.BleAdvertisement;
 import org.junit.Assert;
@@ -11,6 +13,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+
+
+import java.util.Map;
 
 @Config(sdk = 28)
 
@@ -26,8 +31,9 @@ public class OverflowAreaBeaconTest {
         Context context = RuntimeEnvironment.application;
         BeaconManager.getInstanceForApplication(context).setDebug(true);
         byte[] bytes = hexStringToByteArray("02011a020a0c0eff4c000f05a0336aa5f110025b0c14ff4c000156fe87490000000000000000000000000000000000000000000000000000000000000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         BeaconParser parser = new BeaconParser().setBeaconLayout("m:2-2=01,i:3-18,p:-:-59");
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertNotNull("beacon should be not null if parsed successfully", beacon);
         assertEquals("id should be parsed", "56fe8749-0000-0000-0000-000000000000", beacon.getId1().toString());
     }
@@ -37,8 +43,9 @@ public class OverflowAreaBeaconTest {
         Context context = RuntimeEnvironment.application;
         BeaconManager.getInstanceForApplication(context).setDebug(true);
         byte[] bytes = hexStringToByteArray("02011a020a0c0eff4c000f05a0336aa5f110025b0c0000000000000000000014ff4c000156fe874900000000000000000000000000000000000000000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         BeaconParser parser = new BeaconParser().setBeaconLayout("m:2-2=01,i:3-18,p:-:-59");
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertNotNull("beacon should be not null if parsed successfully", beacon);
         assertEquals("id should be parsed", "56fe8749-0000-0000-0000-000000000000", beacon.getId1().toString());
     }

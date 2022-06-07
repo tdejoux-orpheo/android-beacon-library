@@ -448,34 +448,25 @@ public class BeaconParser implements Serializable {
      * @param scanData The actual packet bytes
      * @param rssi The measured signal strength of the packet
      * @param device The Bluetooth device that was detected
+     * @param serviceData The service data in the packet
      * @param timestampMs The timestamp in milliseconds of the scan execution
      * @return An instance of a <code>Beacon</code>
      */
-    public Beacon fromScanData(byte[] scanData, int rssi, BluetoothDevice device, long timestampMs) {
-        return fromScanData(scanData, rssi, device, timestampMs, new Beacon());
+    public Beacon fromScanData(byte[] scanData, int rssi, BluetoothDevice device, Map<ParcelUuid, byte[]> serviceData, long timestampMs) {
+        return fromScanData(scanData, rssi, device, serviceData, timestampMs, new Beacon());
     }
 
-    protected Beacon fromScanData(byte[] bytesToProcess, int rssi, BluetoothDevice device, long timestampMs, Beacon beacon) {
+    protected Beacon fromScanData(byte[] bytesToProcess, int rssi, BluetoothDevice device, Map<ParcelUuid, byte[]> serviceData, long timestampMs, Beacon beacon) {
         BleAdvertisement advert = new BleAdvertisement(bytesToProcess);
         boolean parseSucceeded = false;
         ArrayList<Pdu> pdusToParse = new ArrayList<Pdu>();
         int startByte = 0;
         ArrayList<Identifier> identifiers = new ArrayList<Identifier>();
         ArrayList<Long> dataFields = new ArrayList<Long>();
-        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         int txPower = 0;
 
 
         for (Pdu pdu: advert.getPdus()) {
-            if (pdu.getType() == Pdu.SERVICE_UUID_PDU_TYPE) {
-                // The first two bytes of the service data are service data UUID in little
-                // endian. The rest bytes are service data.
-                int serviceUuidLength = BluetoothUuid.UUID_BYTES_16_BIT;
-                byte[] serviceDataUuidBytes = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1, serviceUuidLength);
-                ParcelUuid serviceDataUuid = BluetoothUuid.parseUuidFrom(serviceDataUuidBytes);
-                byte[] serviceDataArray = extractBytes(pdu.getBytes(), pdu.getStartIndex() - 1 + serviceUuidLength,  pdu.getActualLength() - serviceUuidLength);
-                serviceData.put(serviceDataUuid, serviceDataArray);
-            }
             if ((pdu.getType() == Pdu.GATT_SERVICE_UUID_PDU_TYPE && mServiceUuid != null) ||
                 (pdu.getType() == Pdu.GATT_SERVICE_UUID_128_BIT_PDU_TYPE && mServiceUuid128Bit.length != 0)  || pdu.getType() == Pdu.MANUFACTURER_DATA_PDU_TYPE) {
 

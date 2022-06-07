@@ -3,6 +3,8 @@ package org.altbeacon.beacon;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.os.Parcel;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 import android.util.Log;
 
 import org.altbeacon.beacon.logging.LogManager;
@@ -14,6 +16,7 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -31,9 +34,10 @@ public class CBeaconTest {
     public void testDetectsCBeacon() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02010603036ffd15166ffd0102030405060708090a0b0c0d0e0f100000000000000000000000000000000000000000000000000000000000000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         BeaconParser parser = new BeaconParser();
         parser.setBeaconLayout("s:0-1=fd6f,p:0-0:63,i:2-17");
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 0l);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 0l);
         assertNotNull("CBeacon should be not null if parsed successfully", beacon);
         assertEquals("id should be parsed", "01020304-0506-0708-090a-0b0c0d0e0f10", beacon.getId1().toString());
         assertEquals("txPower should be parsed", -82, beacon.getTxPower());
@@ -43,9 +47,10 @@ public class CBeaconTest {
     public void testDetectsCBeaconWithoutPower() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02010603036ffd15166ffd0102030405060708090a0b0c0d0e0f100000000000000000000000000000000000000000000000000000000000000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         BeaconParser parser = new BeaconParser();
         parser.setBeaconLayout("s:0-1=fd6f,p:-:-59,i:2-17");
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 0l);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 0l);
         assertNotNull("CBeacon should be not null if parsed successfully", beacon);
         assertEquals("id should be parsed", "01020304-0506-0708-090a-0b0c0d0e0f10", beacon.getId1().toString());
         assertEquals("txPower should be set to value specified", -59, beacon.getTxPower());
@@ -56,9 +61,10 @@ public class CBeaconTest {
         LogManager.setLogger(Loggers.verboseLogger());
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c50900");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         BeaconParser parser = new BeaconParser();
         parser.setBeaconLayout("s:0-1=fd6f,p:0-0:63,i:2-17");
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 0l);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 0l);
         assertNull("CBeacon should not be parsed", beacon);
     }
 

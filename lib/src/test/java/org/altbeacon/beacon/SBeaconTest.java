@@ -2,11 +2,14 @@ package org.altbeacon.beacon;
 
 import android.bluetooth.BluetoothDevice;
 import android.os.Parcel;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 
 import org.junit.Test;
 import org.robolectric.annotation.Config;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -22,8 +25,9 @@ public class SBeaconTest {
     public void testDetectsSBeacon() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02011a1bff1801031501000100c502000000000000000003");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         SBeaconParser parser = new SBeaconParser();
-        SBeacon sBeacon = (SBeacon) parser.fromScanData(bytes, -55, null, 123456L);
+        SBeacon sBeacon = (SBeacon) parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertNotNull("SBeacon should be not null if parsed successfully", sBeacon);
         assertEquals("id should be parsed", "0x000000000003", sBeacon.getId());
         assertEquals("group should be parsed", 1, sBeacon.getGroup());
@@ -87,7 +91,7 @@ public class SBeaconTest {
         private static final String TAG = "SBeaconParser";
 
         @Override
-        public Beacon fromScanData(byte[] scanData, int rssi, BluetoothDevice device, long timestamp) {
+        public Beacon fromScanData(byte[] scanData, int rssi, BluetoothDevice device, Map<ParcelUuid, byte[]> serviceData, long timestamp) {
             int startByte = 2;
             while (startByte <= 5) {
                 // "m:2-3=0203,i:2-2,i:7-8,i:14-19,d:10-13,p:9-9"

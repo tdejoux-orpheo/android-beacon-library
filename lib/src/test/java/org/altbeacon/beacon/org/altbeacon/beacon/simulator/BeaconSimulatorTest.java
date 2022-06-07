@@ -4,6 +4,9 @@ package org.altbeacon.beacon.org.altbeacon.beacon.simulator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
+
 import org.altbeacon.beacon.AltBeacon;
 import org.altbeacon.beacon.AltBeaconParser;
 import org.altbeacon.beacon.Beacon;
@@ -18,6 +21,7 @@ import org.junit.Test;
 import java.lang.Override;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import dalvik.annotation.TestTarget;
 import org.robolectric.annotation.Config;
@@ -50,7 +54,8 @@ public class BeaconSimulatorTest {
     public void testSetBeacons(){
         StaticBeaconSimulator staticBeaconSimulator = new StaticBeaconSimulator();
         byte[] beaconBytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c509");
-        Beacon beacon = new AltBeaconParser().fromScanData(beaconBytes, -55, null,123456L);
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
+        Beacon beacon = new AltBeaconParser().fromScanData(beaconBytes, -55, null, serviceData, 123456L);
         ArrayList<Beacon> beacons = new ArrayList<Beacon>();
         beacons.add(beacon);
         staticBeaconSimulator.setBeacons(beacons);

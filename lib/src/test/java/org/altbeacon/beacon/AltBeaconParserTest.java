@@ -1,5 +1,8 @@
 package org.altbeacon.beacon;
 
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -11,6 +14,8 @@ import org.robolectric.RobolectricTestRunner;
 import org.junit.runner.RunWith;
 import org.junit.Test;
 import org.robolectric.annotation.Config;
+
+import java.util.Map;
 
 @Config(sdk = 28)
 @RunWith(RobolectricTestRunner.class)
@@ -38,8 +43,9 @@ public class AltBeaconParserTest {
     public void testRecognizeBeacon() {
         BeaconManager.setDebug(true);
         byte[] bytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c50900");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertEquals ("Beacon should have one data field", 1, beacon.getDataFields().size());
         assertEquals("manData should be parsed", 9, ((AltBeacon) beacon).getMfgReserved());
     }
@@ -48,17 +54,19 @@ public class AltBeaconParserTest {
     public void testDetectsDaveMHardwareBeacon() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600050003be020e09526164426561636f6e20555342020a0300000000000000000000000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertNotNull("Beacon should be not null if parsed successfully", beacon);
     }
     @Test
     public void testDetectsAlternateBeconType() {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02011a1bff1801aabb2f234454cf6d4a0fadf2f4911ba9ffa600010002c50900");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
         parser.setMatchingBeaconTypeCode(0xaabbl);
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertNotNull("Beacon should be not null if parsed successfully", beacon);
     }
     @Test
@@ -67,8 +75,9 @@ public class AltBeaconParserTest {
         org.robolectric.shadows.ShadowLog.stream = System.err;
         LogManager.d("XXX", "testParseWrongFormatReturnsNothing start");
         byte[] bytes = hexStringToByteArray("02011a1aff1801ffff2f234454cf6d4a0fadf2f4911ba9ffa600010002c509");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         LogManager.d("XXX", "testParseWrongFormatReturnsNothing end");
         assertNull("Beacon should be null if not parsed successfully", beacon);
     }
@@ -78,8 +87,9 @@ public class AltBeaconParserTest {
         BeaconManager.setDebug(true);
         org.robolectric.shadows.ShadowLog.stream = System.err;
         byte[] bytes = hexStringToByteArray("02011a1aff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c5000000");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertEquals("mRssi should be as passed in", -55, beacon.getRssi());
         assertEquals("uuid should be parsed", "2f234454-cf6d-4a0f-adf2-f4911ba9ffa6", beacon.getIdentifier(0).toString());
         assertEquals("id2 should be parsed", "1", beacon.getIdentifier(1).toString());

@@ -1,6 +1,8 @@
 package org.altbeacon.beacon;
 
 import android.os.Parcel;
+import android.os.ParcelUuid;
+import android.util.ArrayMap;
 
 import org.junit.After;
 import org.junit.Test;
@@ -9,6 +11,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -54,8 +57,9 @@ public class AltBeaconTest {
     @Test
     public void testRecognizeBeacon() {
         byte[] bytes = hexStringToByteArray("02011a1bff1801beac2f234454cf6d4a0fadf2f4911ba9ffa600010002c509");
+        Map<ParcelUuid, byte[]> serviceData = new ArrayMap<ParcelUuid, byte[]>();
         AltBeaconParser parser = new AltBeaconParser();
-        Beacon beacon = parser.fromScanData(bytes, -55, null, 123456L);
+        Beacon beacon = parser.fromScanData(bytes, -55, null, serviceData, 123456L);
         assertEquals("manData should be parsed", 9, ((AltBeacon) beacon).getMfgReserved() );
     }
 
